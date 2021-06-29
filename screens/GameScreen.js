@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Text, View, StyleSheet, Button, Alert } from "react-native";
 import NumberContainer from "./../components/NumberContainer";
 import Card from "./../components/Card";
@@ -18,9 +18,20 @@ const GameScreen = (props) => {
   const [currentGuess, setCurrentGuess] = useState(
     generateRandomNumber(1, 100, props.userChoice)
   );
+  const [rounds, setRounds] = useState(0);
 
   const currentLow = useRef(1);
   const currentHigh = useRef(100);
+
+  const { userChoice, onGameOver } = props;
+
+  // this runs only after the logic renders. it renders last after logic must have rendered.
+  useEffect(() => {
+    if (currentGuess === userChoice) {
+      onGameOver(rounds);
+    }
+    // this dependecies ensure that the side effects run if there is any changes to them.
+  }, [currentGuess, userChoice, onGameOver]);
 
   const nextGuessHandler = (direction) => {
     if (
@@ -33,15 +44,20 @@ const GameScreen = (props) => {
       return;
     }
 
-    if(direction === "lower") {
+    if (direction === "lower") {
       currentHigh.current = currentGuess;
     }
-    if(direction === "greater") {
+    if (direction === "greater") {
       currentLow.current = currentGuess;
     }
 
-    const nextRandomNumber = generateRandomNumber(currentLow.current, currentHigh.current, currentGuess);
+    const nextRandomNumber = generateRandomNumber(
+      currentLow.current,
+      currentHigh.current,
+      currentGuess
+    );
     setCurrentGuess(nextRandomNumber);
+    setRounds((curRounds) => curRounds + 1);
   };
   return (
     <View style={styles.screen}>
